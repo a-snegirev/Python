@@ -1,0 +1,74 @@
+def balls(r,v,dt,a):
+    while dt > 0:
+
+        # Время до столкновения шаров друг с другом
+        x = np.tile(r[0], (r.shape[1], 1))
+        y = np.tile(r[1], (r.shape[1], 1))
+        vx = np.tile(v[0], (v.shape[1], 1))
+        vy = np.tile(v[1], (v.shape[1], 1))
+        dx = x - np.transpose(x)
+        dy = y - np.transpose(y)
+        dvx = vx - np.transpose(vx)
+        dvy = vy - np.transpose(vy)
+        rr = dx * dx + dy * dy
+        rv = dx * dvx + dy * dvy
+        vv = dvx * dvx + dvy * dvy
+        a2 = 4 * a * a
+        d = rv * rv - vv * (rr - a2)
+        tb = np.tile(np.inf, d.shape)
+        m = (d > 0) & (rv < 0) & (vv > 0) & (rr > a2)
+        tb[m] = -(rv[m] + np.sqrt(d[m])) / vv[m]
+        t0 = np.min(tb)
+        i0, j0 = np.unravel_index(np.argmin(tb), tb.shape)
+
+        # Время до столкновения шаров со стенкой
+        t = ((1 - a) * np.sign(v) - r) / v
+        t1 = np.min(t)
+        i1, j1 = np.unravel_index(np.argmin(t), v.shape)
+
+        # Движение шаров до столкновения
+        r = r + v * min(t0, t1, dt);
+
+        # Столкновение шаров друг с другом
+        if t0 < dt and t0 < t1:
+            dr = r[:,i0] - r[:,j0]
+            dv = v[:,i0] - v[:,j0]
+            D = 4 * a * a
+            delta_v = np.dot(dr,dv) / D * dr
+            v[:,i0] = v[:,i0] - delta_v
+            v[:,j0] = v[:,j0] + delta_v
+        # Столкновение шаров со стенкой
+        if t1 < dt and t1 < t0:
+            v[i1,j1] = -v[i1,j1]
+
+        dt = dt - min(t0, t1, dt);
+    return r,v
+
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib notebook
+
+r = np.random.rand(2, 300) * 2 - 1
+v = np.random.rand(2, 300) * 2 - 1
+X,Y = [r[0,1]],[r[1,1]]
+dt = 0.01
+
+subplot(211)
+p, = plt.plot(r[0],r[1],'. ')
+p1, = plt.plot(X,Y)
+plt.axis([-1, 1, -1, 1])
+
+subplot(212)
+p2, = plt.plot(v[0],v[1],'. ')
+plt.axis([-1, 1, -1, 1])
+
+for t in np.arange(0,10,dt):
+    if t  == 5:
+        v = -v
+    r,v = balls(r,v,dt,0.01)
+    X.append(r[0,1])
+    Y.append(r[1,1])
+    p.set_data(r)
+    p1.set_data(X,Y)
+    p2.set_data(v)
+    plt.gcf().canvas.draw()

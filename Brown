@@ -1,0 +1,43 @@
+from numpy import *
+from matplotlib.pyplot import *
+%matplotlib notebook
+
+n = 100
+x = zeros(n,dtype ='double')
+z = zeros(n,dtype ='double')
+y = linspace(1,n,n)
+
+
+subplot(311)
+ln, = plot(x,z,'. ')
+axis([-10,10,-10,10])
+
+
+
+
+
+
+for t in arange(0,10000,0.1):
+    x = x + random.rand(1,n)*0.2 -0.1
+    z = z + random.rand(1,n)*0.2 -0.1
+    r = sqrt(x*x +z*z)
+    X=arange(-10,10,0.01)
+    s1 = std(x)
+    s2 = std(r)
+    m = mean(r)
+    Y1 = 20*exp(-X**2/(2*s1**2))
+    Y2 = 70*X*exp(-(X-m)**2/(2*s2**2))
+    
+    subplot(312)
+    cla()
+    hist(x.T, bins = np.arange(-10,10,0.1))
+    hist(z.T, bins = np.arange(-10,10,0.1))
+    plot(X,Y1)
+    
+    subplot(313)
+    cla()
+    hist(r.T, bins = np.arange(-10,10,0.1))
+    plot(X,Y2)
+    
+    ln.set_data(x,z)
+    gcf().canvas.draw()

@@ -68,7 +68,8 @@ for t in np.arange(0,10,dt):
     m = np.mean(v1)
     s = np.std(v1)
     X = np.arange(-5,5,0.01)
-    Y = 27/(2.5*s)*np.exp(-(X-m)**2/(2*s**2))
+    Y = 40*X*np.exp(-(X-m)**2/(2*s**2))
+    Y[X < 0] = 0
     
     plt.subplot(412)
     plt.cla()
